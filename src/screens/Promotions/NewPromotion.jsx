@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { newPromotionSchema } from "../../utils/validationSchemas"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { toISOWithHNOffset } from "../../utils"
+import { formatDishes, toISOWithHNOffset } from "../../utils"
 
 export const NewPromotion = () => {
   const dispatch = useDispatch()
@@ -56,10 +56,9 @@ export const NewPromotion = () => {
 
     const formDataImage = new FormData()
     formDataImage.append("files", data.files[0])
+    const formattedDishes = data.allDishes === "some" ? formatDishes(data.Dishes) : []
 
-    dispatch(
-      createOffer({ params: formData, imageParams: formDataImage, dishes: data?.allDishes === "some" ? data?.Dishes : [] })
-    )
+    dispatch(createOffer({ params: formData, imageParams: formDataImage, dishes: formattedDishes }))
       .unwrap()
       .then(() => {
         navigate(SETTING_NAVIGATION_ROUTES.Promotions.path)

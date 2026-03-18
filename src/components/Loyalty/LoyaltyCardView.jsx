@@ -1,4 +1,4 @@
-import { Checkbox, CloseButton, Flex, Group, MantineProvider, Paper, Stack, Text, Tooltip } from "@mantine/core"
+import { Checkbox, CloseButton, Flex, Group, MantineProvider, Paper, Stack, Switch, Text, Tooltip } from "@mantine/core"
 import { IconStarFilled } from "@tabler/icons-react"
 import Lottie from "react-lottie"
 import { colors } from "../../theme/colors"
@@ -7,7 +7,9 @@ import { theme } from "../../utils/constants"
 import { useDisclosure } from "@mantine/hooks"
 import ConfirmationModal from "../../screens/ConfirmationModal"
 import { useDispatch } from "react-redux"
-import { markCardAsRedeemed } from "../../store/features/loyaltySlice"
+import { updateLoyaltyCardStatus, markCardAsRedeemed } from "../../store/features/loyaltySlice"
+import { IconCheck } from "@tabler/icons-react"
+import { IconX } from "@tabler/icons-react"
 
 const LoyaltyCardView = ({
   id,
@@ -25,7 +27,8 @@ const LoyaltyCardView = ({
   cardIndex,
   tracking,
   checked,
-  redeemedDate
+  redeemedDate,
+  isActive
 }) => {
   const [opened, { close, open }] = useDisclosure(false)
   const dispatch = useDispatch()
@@ -81,12 +84,28 @@ const LoyaltyCardView = ({
                 </Flex>
 
                 {!tracking && (
-                  <CloseButton
-                    onClick={() => {
-                      openDelete()
-                      setIndex(cardIndex)
-                    }}
-                  />
+                  <Flex align="center" gap={4}>
+                    <MantineProvider theme={theme}>
+                      <Switch
+                        checked={isActive}
+                        color={colors.main_app_color}
+                        onChange={(e) => dispatch(updateLoyaltyCardStatus({ rewardId: id, isActive: e.currentTarget.checked }))}
+                        thumbIcon={
+                          isActive ? (
+                            <IconCheck size={12} color={colors.main_app_color} stroke={3} />
+                          ) : (
+                            <IconX size={12} color={colors.main_app_color} stroke={3} />
+                          )
+                        }
+                      />
+                    </MantineProvider>
+                    <CloseButton
+                      onClick={() => {
+                        openDelete()
+                        setIndex(cardIndex)
+                      }}
+                    />
+                  </Flex>
                 )}
               </Flex>
 

@@ -7,7 +7,7 @@ import { fetchOrderDetails, setNewOrder, setNewOrderForAdmins, setOrderStatus } 
 import notificationSound from "../assets/sound/notificationSound.wav"
 import { useNavigate, useLocation } from "react-router-dom"
 import { ActionIcon, Button, Flex, Text } from "@mantine/core"
-import { fetchReservationDetails, setNewReservation } from "../store/features/reservationsSlice"
+import { fetchReservationDetails, setNewReservation, updateReservationStatus } from "../store/features/reservationsSlice"
 import { IconX } from "@tabler/icons-react"
 
 export const NotificationProvider = ({ children }) => {
@@ -240,7 +240,7 @@ export const NotificationProvider = ({ children }) => {
             <Button
               size="xs"
               variant="light"
-              w="125px"
+              w="130px"
               color="green"
               onClick={() => {
                 navigate(`/reservations/${reservation.id}`)
@@ -273,11 +273,13 @@ export const NotificationProvider = ({ children }) => {
         ),
         message: (
           <Flex direction="row" gap="sm" align="center" justify="space-between">
-            <Text size="sm">Se cambió el estado de la reservación</Text>
+            <Text size="sm">
+              {reservation.status !== "confirmed" ? " Se cambió el estado de la reservación" : "La reservación ya fue pagada"}
+            </Text>
             <Button
               size="xs"
               variant="light"
-              w="125px"
+              w="130px"
               color="green"
               onClick={() => {
                 navigate(`/reservations/${reservation.id}`)
@@ -292,6 +294,7 @@ export const NotificationProvider = ({ children }) => {
         withCloseButton: false,
         color: "green"
       })
+      dispatch(updateReservationStatus(reservation))
     }
 
     const handleReservationNewComment = (reservation) => {
@@ -313,7 +316,7 @@ export const NotificationProvider = ({ children }) => {
             <Button
               size="xs"
               variant="light"
-              w="125px"
+              w="130px"
               color="green"
               onClick={() => {
                 navigate(`/reservations/${reservation.id}`)
@@ -331,6 +334,42 @@ export const NotificationProvider = ({ children }) => {
       dispatch(fetchReservationDetails(reservation?.id))
     }
 
+    const handleRescheduleReservation = (reservation) => {
+      playSound()
+      notifications.show({
+        id: reservation.id,
+        title: (
+          <Flex justify="space-between" align="center">
+            <Text size="sm">Solicitud de reprogramación</Text>
+            <ActionIcon variant="subtle" c="dimmed" color="gray" onClick={() => notifications.hide(reservation.id)}>
+              <IconX size="1.1rem" />
+            </ActionIcon>
+          </Flex>
+        ),
+        message: (
+          <Flex direction="row" gap="sm" align="center" justify="space-between">
+            <Text size="sm">El cliente solicitó una reprogramación de la reservación</Text>
+            <Button
+              size="xs"
+              variant="light"
+              w="130px"
+              color="green"
+              onClick={() => {
+                navigate(`/reservations/${reservation.id}`)
+                dispatch(fetchReservationDetails(reservation.id))
+                notifications.hide(reservation.id)
+              }}>
+              Ver reservación
+            </Button>
+          </Flex>
+        ),
+        autoClose: false,
+        withCloseButton: false,
+        color: "green"
+      })
+      dispatch(updateReservationStatus(reservation))
+    }
+
     //Orders sockets
     orderSocket.on("newOrder", handleNewOrder)
     orderSocket.on("orderReady", handleOrderReady)
@@ -342,6 +381,7 @@ export const NotificationProvider = ({ children }) => {
     orderSocket.on("newTableReservation", handleNewReservation)
     orderSocket.on("tableReservationStatusUpdated", handleReservationStatus)
     orderSocket.on("tableReservationNewComment", handleReservationNewComment)
+    orderSocket.on("tableReservationReschedule", handleRescheduleReservation)
 
     return () => {
       orderSocket.off("newOrder", handleNewOrder)
@@ -353,6 +393,7 @@ export const NotificationProvider = ({ children }) => {
       orderSocket.off("newTableReservation", handleNewReservation)
       orderSocket.off("tableReservationStatusUpdated", handleReservationStatus)
       orderSocket.off("tableReservationNewComment", handleReservationNewComment)
+      orderSocket.off("tableReservationReschedule", handleRescheduleReservation)
     }
   }, [orderSocket, user.role, location.pathname])
 

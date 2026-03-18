@@ -13,17 +13,13 @@ export const GeneralInformationForm = ({ register, errors, setValue, control, im
   const allDishes = watch("allDishes")
   const category = watch("category")
   const percentage = watch("percentage")
-
   const startDate = watch("startDate") ? new Date(watch("startDate")) : null
   const endDate = watch("endDate") ? new Date(watch("endDate")) : null
-
   const dishesAlreadySelected = watch("Dishes")
   const dishes = useSelector((state) => state.promotions.dishesList)
   const user = useSelector((state) => state.user.value)
   const dispatch = useDispatch()
   const [selectedDishes, setSelectedDishes] = useState([])
-
-  // ✅ now + 1 minuto en tiempo real
   const [nowPlusOne, setNowPlusOne] = useState(() => dayjs().add(1, "minute"))
 
   useEffect(() => {
@@ -56,7 +52,6 @@ export const GeneralInformationForm = ({ register, errors, setValue, control, im
     if (acceptedFiles.length > 0) setValue("files", acceptedFiles)
   }
 
-  // ✅ helper: minTime dinámico (HH:mm) solo si la fecha es HOY
   const getMinTimeIfToday = (date) => {
     if (!date) return undefined
     const isToday = dayjs(date).isSame(dayjs(), "day")
@@ -66,7 +61,6 @@ export const GeneralInformationForm = ({ register, errors, setValue, control, im
   const startMinTime = useMemo(() => getMinTimeIfToday(startDate), [startDate, nowPlusOne])
   const endMinTime = useMemo(() => getMinTimeIfToday(endDate), [endDate, nowPlusOne])
 
-  // ✅ auto-corrección para START (si hoy y quedó atrás -> now+1)
   useEffect(() => {
     if (update) return
     if (!startDate) return
@@ -77,7 +71,6 @@ export const GeneralInformationForm = ({ register, errors, setValue, control, im
     }
   }, [nowPlusOne, startDate, setValue, update])
 
-  // ✅ auto-corrección para END (si hoy y quedó atrás -> now+1)
   useEffect(() => {
     if (update) return
     if (!endDate) return
@@ -88,7 +81,6 @@ export const GeneralInformationForm = ({ register, errors, setValue, control, im
     }
   }, [nowPlusOne, endDate, setValue, update])
 
-  // ✅ regla adicional: end >= start + 1 minuto (si ambos existen)
   useEffect(() => {
     if (update) return
     if (!startDate || !endDate) return

@@ -18,7 +18,6 @@ import {
   MantineProvider,
   BackgroundImage,
   Skeleton,
-  CopyButton,
   Tooltip,
   ActionIcon,
   rem,
@@ -76,6 +75,7 @@ import {
   IconCreditCard
 } from "@tabler/icons-react"
 import { LoadingPage } from "../../components/LoadingPage"
+import { ManualCopyButton } from "../../components/ManualCopyButton"
 import dayjs from "dayjs"
 
 export const OrderDetails = () => {
@@ -123,7 +123,10 @@ export const OrderDetails = () => {
             <Group>
               <Flex align="center" justify="space-between" gap={4}>
                 <BackButton title={`#${orderDetails?.orderId?.split("-")[0]?.toUpperCase()}`} show />
-                <CopyButton value={orderDetails?.orderId?.split("-")[0]?.toUpperCase()} timeout={2000}>
+                <ManualCopyButton
+                  value={orderDetails?.orderId?.split("-")[0]?.toUpperCase()}
+                  timeout={2000}
+                  errorMessage="No se pudo copiar el ID del pedido al portapapeles">
                   {({ copied, copy }) => (
                     <Tooltip label={copied ? "Copiado" : "Copiar"} withArrow position="right">
                       <ActionIcon color={copied ? "teal" : "gray"} variant="subtle" onClick={copy}>
@@ -131,7 +134,7 @@ export const OrderDetails = () => {
                       </ActionIcon>
                     </Tooltip>
                   )}
-                </CopyButton>
+                </ManualCopyButton>
               </Flex>
             </Group>
             <Paper withBorder p="md" radius="md" bg={orderDetails?.status === "canceled" ? "red" : ""}>

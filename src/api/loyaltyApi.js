@@ -68,7 +68,10 @@ const loyaltyApi = {
     return axiosClient.get(url)
   },
 
-  markLoyaltyCardAsRedeemed: (loyaltyCardId) => axiosClient.patch(`api/v1/loyalty-program/redeem-loyalty-card/${loyaltyCardId}`)
+  markLoyaltyCardAsRedeemed: (loyaltyCardId) => axiosClient.patch(`api/v1/loyalty-program/redeem-loyalty-card/${loyaltyCardId}`),
+
+  changeLoyaltyCardRewardStatus: (rewardId, isActive) =>
+    axiosClient.patch(`api/v1/loyalty-program/redeemable-card/${rewardId}/active`, { isActive })
 }
 
 export default loyaltyApi

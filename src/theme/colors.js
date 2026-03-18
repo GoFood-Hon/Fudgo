@@ -47,6 +47,9 @@ export const colors = {
 
   light_link_text: palette.dodger_blue,
   main_app_color: '#FF3148',
+  blue_badge: 'rgba(0, 94, 255, 1)',
+  green_badge: 'rgba(0, 94, 2, 1)',
+  yellow_badge: 'rgba(153, 135, 0, 1)',
 
 
   /**

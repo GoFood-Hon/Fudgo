@@ -9,7 +9,6 @@ import { useDispatch } from "react-redux"
 import { useSelector } from "react-redux"
 import { RestaurantBanner } from "./RestaurantBanner"
 import FormLayout from "../../components/Form/FormLayout"
-import { showNotification } from "@mantine/notifications"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { SocialMediaInformation } from "./SocialMediaInformation"
 import { newRestaurantSchema } from "../../utils/validationSchemas"
@@ -51,11 +50,20 @@ export const NewRestaurant = () => {
     if (data.pricePerChair) {
       formData.append("pricePerChair", data.pricePerChair)
     }
+
+    //Minimo valor 1
     if (data.hoursBeforeCancellation) {
       formData.append("hoursBeforeCancellation", data.hoursBeforeCancellation)
     }
+    //hoursBeforeBooking siempre debe ser mayor que hoursBeforeCancellation, si hoursBeforeBooking existe
+    //Minimo valor 2
     if (data.hoursBeforeBooking) {
       formData.append("hoursBeforeBooking", data.hoursBeforeBooking)
+    }
+
+    //Minimo valor 1
+    if (data.hoursBeforePayment) {
+      formData.append("hoursBeforePayment", data.hoursBeforePayment)
     }
 
     if (data.shippingFree !== true && data.shippingPrice) {

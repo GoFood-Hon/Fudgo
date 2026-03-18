@@ -40,7 +40,7 @@ import { updatePlanStatus } from "../../store/features/plansSlice"
 import { updateCollectionStatus } from "../../store/features/collectionsSlice"
 import Lottie from "react-lottie"
 import animationData from "../../assets/animation/NothingFoundAnimation.json"
-import { theme } from "../../utils/constants"
+import { reservationColorStatus, reservationLabels, theme } from "../../utils/constants"
 import { setSelectedPromotion, updateOfferStatus } from "../../store/features/promotionsSlice"
 import { IconTrash } from "@tabler/icons-react"
 import { setSelectedCoupon, updateStatus } from "../../store/features/couponsSlice"
@@ -509,13 +509,11 @@ export default function MenuTable({
         center: true,
         render: (status) => (
           <Badge
+            w={reservationLabels[status].split(" ").length === 2 ? 220 : 150}
             size="lg"
-            w={160}
             tt="capitalize"
-            color={
-              status === "pending" ? "rgba(153, 135, 0, 1)" : status === "cancelled" ? colors.main_app_color : "rgba(0, 94, 2, 1)"
-            }>
-            {status === "pending" ? "Pendiente" : status === "cancelled" ? "Cancelada" : "Aprobada"}
+            color={reservationColorStatus[status]}>
+            {reservationLabels[status]}
           </Badge>
         )
       },

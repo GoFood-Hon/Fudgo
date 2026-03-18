@@ -261,7 +261,12 @@ export const getDeliverySteps = (orderDetails) => {
 
 export const toISOWithHNOffset = (date) => {
   if (!date) return ""
-  return dayjs(date)
-    .tz("America/Tegucigalpa") 
-    .format("YYYY-MM-DDTHH:mm:ssZ")
+  return dayjs(date).tz("America/Tegucigalpa").format("YYYY-MM-DDTHH:mm:ssZ")
+}
+
+export const formatDishes = (dishes) => {
+  if (Array.isArray(dishes) && dishes.every((item) => typeof item === "object" && item !== null && "id" in item)) {
+    return dishes.map((item) => item.id)
+  }
+  return dishes
 }

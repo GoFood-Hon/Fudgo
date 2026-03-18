@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { editPromotionSchema } from "../../utils/validationSchemas"
-import { toISOWithHNOffset } from "../../utils"
+import { formatDishes, toISOWithHNOffset } from "../../utils"
 
 export const EditPromotion = () => {
   const dispatch = useDispatch()
@@ -54,13 +54,6 @@ export const EditPromotion = () => {
     }
   ]
 
-  const formatDishes = (dishes) => {
-    if (Array.isArray(dishes) && dishes.every((item) => typeof item === "object" && item !== null && "id" in item)) {
-      return dishes.map((item) => item.id)
-    }
-    return dishes
-  }
-
   const onSubmit = (data) => {
     const formData = new FormData()
 
@@ -72,9 +65,6 @@ export const EditPromotion = () => {
     } else {
       formData.append("amount", data.amount.includes(".00") ? data.amount : data.amount.concat(".00"))
     }
-
-    formData.append("startDate", toISOWithHNOffset(data.startDate))
-    formData.append("endDate", toISOWithHNOffset(data.endDate))
 
     let formDataImage = null
     if (data?.files?.[0]) {

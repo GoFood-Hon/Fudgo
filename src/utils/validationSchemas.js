@@ -1,5 +1,15 @@
 import { z } from "zod"
 
+const parseHoursValue = (value) => {
+  if (value === null || value === undefined) return null
+
+  const trimmedValue = String(value).trim()
+  if (trimmedValue === "") return null
+
+  const parsedValue = Number(trimmedValue)
+  return Number.isInteger(parsedValue) ? parsedValue : NaN
+}
+
 export const newRestaurantSchema = z
   .object({
     bannerDishes: z.array(z.instanceof(File)).min(1, "El banner del comercio es requerido"),
@@ -52,8 +62,9 @@ export const newRestaurantSchema = z
       .refine((val) => !val || z.string().url().safeParse(val).success, { message: "Debes ingresar una URL válida" }),
 
     pricePerChair: z.union([z.string(), z.null()]).optional(),
-    hoursBeforeCancellation: z.union([z.string(), z.null()]).optional(),
     hoursBeforeBooking: z.union([z.string(), z.null()]).optional(),
+    hoursBeforePayment: z.union([z.string(), z.null()]).optional(),
+    hoursBeforeCancellation: z.union([z.string(), z.null()]).optional(),
 
     shippingPrice: z.string().optional()
   })
@@ -66,9 +77,9 @@ export const newRestaurantSchema = z
       })
     }
 
-    const { pricePerChair, hoursBeforeCancellation, hoursBeforeBooking } = data
+    const { pricePerChair, hoursBeforeCancellation, hoursBeforeBooking, hoursBeforePayment } = data
 
-    const anyFilled = pricePerChair || hoursBeforeCancellation || hoursBeforeBooking
+    const anyFilled = pricePerChair || hoursBeforeCancellation || hoursBeforeBooking || hoursBeforePayment
 
     if (anyFilled) {
       if (!pricePerChair || pricePerChair.trim() === "") {
@@ -85,11 +96,72 @@ export const newRestaurantSchema = z
           path: ["hoursBeforeCancellation"]
         })
       }
+      if (!hoursBeforePayment || hoursBeforePayment.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo es requerido si se usan reservaciones de mesa",
+          path: ["hoursBeforePayment"]
+        })
+      }
       if (!hoursBeforeBooking || hoursBeforeBooking.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Este campo es requerido si se usan reservaciones de mesa",
           path: ["hoursBeforeBooking"]
+        })
+      }
+
+      const parsedHoursBeforeBooking = parseHoursValue(hoursBeforeBooking)
+      const parsedHoursBeforeCancellation = parseHoursValue(hoursBeforeCancellation)
+      const parsedHoursBeforePayment = parseHoursValue(hoursBeforePayment)
+
+      if (!Number.isInteger(parsedHoursBeforeBooking)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforeBooking"]
+        })
+      } else {
+        if (parsedHoursBeforeBooking < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser mínimo 2 horas",
+            path: ["hoursBeforeBooking"]
+          })
+        }
+
+        const expectedPreviousHour = parsedHoursBeforeBooking - 1
+
+        if (Number.isInteger(parsedHoursBeforeCancellation) && parsedHoursBeforeCancellation !== expectedPreviousHour) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser exactamente 1 hora menor que la anticipación de reserva",
+            path: ["hoursBeforeCancellation"]
+          })
+        }
+
+        if (Number.isInteger(parsedHoursBeforePayment) && parsedHoursBeforePayment !== expectedPreviousHour) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser exactamente 1 hora menor que la anticipación de reserva",
+            path: ["hoursBeforePayment"]
+          })
+        }
+      }
+
+      if (hoursBeforeCancellation && hoursBeforeCancellation.trim() !== "" && !Number.isInteger(parsedHoursBeforeCancellation)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforeCancellation"]
+        })
+      }
+
+      if (hoursBeforePayment && hoursBeforePayment.trim() !== "" && !Number.isInteger(parsedHoursBeforePayment)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforePayment"]
         })
       }
     }
@@ -196,6 +268,11 @@ export const editRestaurantSchema = z
       .transform((val) => (val != null ? String(val) : val))
       .optional(),
 
+    hoursBeforePayment: z
+      .union([z.string(), z.number(), z.null()])
+      .transform((val) => (val != null ? String(val) : val))
+      .optional(),
+
     hoursBeforeBooking: z
       .union([z.string(), z.number(), z.null()])
       .transform((val) => (val != null ? String(val) : val))
@@ -212,8 +289,8 @@ export const editRestaurantSchema = z
       })
     }
 
-    const { pricePerChair, hoursBeforeCancellation, hoursBeforeBooking } = data
-    const anyFilled = pricePerChair || hoursBeforeCancellation || hoursBeforeBooking
+    const { pricePerChair, hoursBeforeCancellation, hoursBeforeBooking, hoursBeforePayment } = data
+    const anyFilled = pricePerChair || hoursBeforeCancellation || hoursBeforeBooking || hoursBeforePayment
 
     if (anyFilled) {
       if (!pricePerChair || pricePerChair.trim() === "") {
@@ -230,11 +307,72 @@ export const editRestaurantSchema = z
           path: ["hoursBeforeCancellation"]
         })
       }
+      if (!hoursBeforePayment || hoursBeforePayment.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo es requerido si se usan reservaciones de mesa",
+          path: ["hoursBeforePayment"]
+        })
+      }
       if (!hoursBeforeBooking || hoursBeforeBooking.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Este campo es requerido si se usan reservaciones de mesa",
           path: ["hoursBeforeBooking"]
+        })
+      }
+
+      const parsedHoursBeforeBooking = parseHoursValue(hoursBeforeBooking)
+      const parsedHoursBeforeCancellation = parseHoursValue(hoursBeforeCancellation)
+      const parsedHoursBeforePayment = parseHoursValue(hoursBeforePayment)
+
+      if (!Number.isInteger(parsedHoursBeforeBooking)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforeBooking"]
+        })
+      } else {
+        if (parsedHoursBeforeBooking < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser mínimo 2 horas",
+            path: ["hoursBeforeBooking"]
+          })
+        }
+
+        const expectedPreviousHour = parsedHoursBeforeBooking - 1
+
+        if (Number.isInteger(parsedHoursBeforeCancellation) && parsedHoursBeforeCancellation !== expectedPreviousHour) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser exactamente 1 hora menor que la anticipación de reserva",
+            path: ["hoursBeforeCancellation"]
+          })
+        }
+
+        if (Number.isInteger(parsedHoursBeforePayment) && parsedHoursBeforePayment !== expectedPreviousHour) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe ser exactamente 1 hora menor que la anticipación de reserva",
+            path: ["hoursBeforePayment"]
+          })
+        }
+      }
+
+      if (hoursBeforeCancellation && hoursBeforeCancellation.trim() !== "" && !Number.isInteger(parsedHoursBeforeCancellation)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforeCancellation"]
+        })
+      }
+
+      if (hoursBeforePayment && hoursBeforePayment.trim() !== "" && !Number.isInteger(parsedHoursBeforePayment)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Este campo debe ser un número entero",
+          path: ["hoursBeforePayment"]
         })
       }
     }
@@ -1260,7 +1398,10 @@ export const additionalSchema = z
   .superRefine((data, ctx) => {
     if (data.required) {
       // Validar requiredMinimum
-      if (!data.requiredMinimum || Number(data.requiredMinimum) <= 0) {
+      const requiredMinimum = Number(data.requiredMinimum)
+      const hasValidRequiredMinimum = !!data.requiredMinimum && !Number.isNaN(requiredMinimum) && requiredMinimum > 0
+
+      if (!hasValidRequiredMinimum) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Debe especificar la cantidad requerida (mayor o igual a 1).",
@@ -1268,12 +1409,20 @@ export const additionalSchema = z
         })
       }
 
-      // Validar que haya al menos una opción gratuita
-      const hasFree = data.additionalsDetails.some((item) => item.isFree)
-      if (!hasFree) {
+      if (hasValidRequiredMinimum && requiredMinimum > data.additionalsDetails.length) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Al menos una opción debe ser gratuita si el adicional es requerido.",
+          message: "La cantidad requerida no puede ser mayor al total de opciones disponibles.",
+          path: ["requiredMinimum"]
+        })
+      }
+
+      // Validar que exista al menos la cantidad requerida de opciones gratuitas
+      const freeCount = data.additionalsDetails.filter((item) => item.isFree).length
+      if (hasValidRequiredMinimum && freeCount < requiredMinimum) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `La cantidad de opciones gratuitas debe ser igual a ${requiredMinimum}`,
           path: ["additionalsDetails"]
         })
       }

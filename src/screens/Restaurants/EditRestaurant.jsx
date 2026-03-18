@@ -88,30 +88,19 @@ export const EditRestaurant = () => {
       formData.append("shippingFree", data.shippingFree ?? false)
       formData.append("cuisineTypeId", data.cuisineTypeId ?? "")
       formData.append("clinpaysCommerceToken", data.clinpaysCommerceToken ?? null)
-      if (data.pricePerChair) {
-        formData.append("pricePerChair", data.pricePerChair)
-      }
-      if (data.hoursBeforeCancellation) {
-        formData.append("hoursBeforeCancellation", data.hoursBeforeCancellation)
-      }
-      if (data.hoursBeforeBooking) {
-        formData.append("hoursBeforeBooking", data.hoursBeforeBooking)
-      }
-      if (data.shippingFree !== null) {
-        formData.append("shippingPrice", convertToDecimal(data.shippingPrice))
-      }
-      if (data.whatsapp) {
-        formData.append("whatsapp", data.whatsapp.startsWith("+504") ? data.whatsapp : `+504${data.whatsapp}`)
-      }
-      if (data.facebook) {
-        formData.append("facebook", data.facebook)
-      }
-      if (data.instagram) {
-        formData.append("instagram", data.instagram)
-      }
-      if (data.website) {
-        formData.append("website", data.website)
-      }
+      formData.append("shippingPrice", convertToDecimal(data.shippingPrice) || "")
+      formData.append("pricePerChair", data.pricePerChair || "")
+      formData.append("hoursBeforeBooking", data.hoursBeforeBooking || "")
+      formData.append("hoursBeforePayment", data.hoursBeforePayment || "")
+      formData.append("hoursBeforeCancellation", data.hoursBeforeCancellation || "")
+
+      formData.append(
+        "whatsapp",
+        data.whatsapp ? (data.whatsapp.startsWith("+504") ? data.whatsapp : `+504${data.whatsapp}`) : ""
+      )
+      formData.append("facebook", data.facebook || "")
+      formData.append("instagram", data.instagram || "")
+      formData.append("website", data.website || "")
 
       let formDataImage = null
       if (data?.files?.[0]) {

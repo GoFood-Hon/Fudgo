@@ -2,17 +2,19 @@ import { Accordion, Box, Divider, Flex, Group, Image, List, Text } from "@mantin
 import { useState } from "react"
 import { getFormattedHNL } from "../../utils"
 import { useMediaQuery } from "@mantine/hooks"
+import { useNavigate } from "react-router-dom"
 
 export const DishOrderDetailCard = ({ orderDetails, noText }) => {
   const [expanded, setExpanded] = useState(false)
-  const isSmallScreen = useMediaQuery('(min-width: 768px)')
+  const isSmallScreen = useMediaQuery("(min-width: 768px)")
+  const navigate = useNavigate()
 
   return (
     <Accordion variant="separated" radius="md">
       <Accordion.Item value="dish-info">
         <Accordion.Control onClick={() => setExpanded(!expanded)}>
           <Flex justify={"space-between"} align={"center"}>
-            <Group>
+            <Group onClick={() => (expanded ? navigate(`/menus/products/${orderDetails?.Dish?.id}`) : "")}>
               <Image
                 w={noText ? "58px" : "64px"}
                 h={noText ? "58px" : "64px"}

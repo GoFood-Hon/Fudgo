@@ -17,8 +17,8 @@ const initialState = {
   reservationDetails: null,
   error: null,
   reservationComment: "",
-
-  searchField: "identityNumber",
+  updatingStatus: false,
+  searchField: "reservationCode",
   searchData: null,
   searchDishesData: null
 }
@@ -54,12 +54,13 @@ export const fetchReservationByBranch = createAsyncThunk(
 
 export const fetchReservationByRestaurant = createAsyncThunk(
   "reservations/fetchByRestaurant",
-  async ({ restaurantId, limit, page, order, search, search_field }, { rejectWithValue }) => {
+  async ({ restaurantId, limit, page, orderBy, order, search, search_field }, { rejectWithValue }) => {
     try {
       const response = await reservationsApi.getReservationByRestaurant({
         restaurantId,
         limit,
         page,
+        orderBy,
         order,
         search,
         search_field
@@ -195,6 +196,112 @@ export const approveReservation = createAsyncThunk(
   }
 )
 
+export const approveRescheduleReservation = createAsyncThunk(
+  "reservations/approveReschedule",
+  async ({ reservationId, comment }, { rejectWithValue }) => {
+    try {
+      const response = await reservationsApi.approveRescheduleReservation(reservationId, comment)
+
+      showNotification({
+        title: "Reprogramación aprobada",
+        message: "La reprogramación de la reservación se aprobó correctamente",
+        color: "green",
+        duration: 7000
+      })
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.status !== "token_expired") {
+        showNotification({
+          title: "Error",
+          message: error.response?.data?.message || "Error al aprobar la reprogramación de la reservación",
+          color: "red",
+          duration: 7000
+        })
+      }
+
+      return rejectWithValue(error?.response?.data || "Error al aprobar la reprogramación de la reservación")
+    }
+  }
+)
+
+export const invalidRescheduleReservation = createAsyncThunk(
+  "reservations/invalidReschedule",
+  async ({ reservationId, comment }, { rejectWithValue }) => {
+    try {
+      const response = await reservationsApi.invalidRescheduleReservation(reservationId, comment)
+
+      showNotification({
+        title: "Reprogramación rechazada",
+        message: "La reprogramación de la reservación se rechazó correctamente",
+        color: "green",
+        duration: 7000
+      })
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.status !== "token_expired") {
+        showNotification({
+          title: "Error",
+          message: error.response?.data?.message || "Error al rechazar la reprogramación de la reservación",
+          color: "red",
+          duration: 7000
+        })
+      }
+
+      return rejectWithValue(error?.response?.data || "Error al rechazar la reprogramación de la reservación")
+    }
+  }
+)
+
+export const markAsUsed = createAsyncThunk("reservations/markAsUsed", async (reservationCode, { rejectWithValue }) => {
+  try {
+    const response = await reservationsApi.markAsUsed(reservationCode)
+
+    showNotification({
+      title: "Reserva marcada como usada",
+      message: "La reservación se marcó como usada correctamente",
+      color: "green",
+      duration: 7000
+    })
+    return response.data
+  } catch (error) {
+    if (error?.response?.data?.status !== "token_expired") {
+      showNotification({
+        title: "Error",
+        message: error.response?.data?.message || "Error al marcar la reservación como usada",
+        color: "red",
+        duration: 7000
+      })
+    }
+
+    return rejectWithValue(error?.response?.data || "Error al marcar la reservación como usada")
+  }
+})
+
+export const markAsExpired = createAsyncThunk("reservations/markAsExpired", async (reservationId, { rejectWithValue }) => {
+  try {
+    const response = await reservationsApi.markAsExpired(reservationId)
+
+    showNotification({
+      title: "Reserva marcada como expirada",
+      message: "La reservación se marcó como expirada correctamente",
+      color: "green",
+      duration: 7000
+    })
+    return response.data
+  } catch (error) {
+    if (error?.response?.data?.status !== "token_expired") {
+      showNotification({
+        title: "Error",
+        message: error.response?.data?.message || "Error al marcar la reservación como expirada",
+        color: "red",
+        duration: 7000
+      })
+    }
+
+    return rejectWithValue(error?.response?.data || "Error al marcar la reservación como expirada")
+  }
+})
+
 const reservationsSlice = createSlice({
   name: "reservations",
   initialState,
@@ -217,28 +324,55 @@ const reservationsSlice = createSlice({
     setNewReservation: (state, action) => {
       const newReservation = action.payload
       const itemsPerPage = state.itemsPerPage
-      const newReservationsPerPage = { ...state.reservationsPerPage }
+      const FIRST_PAGE = 1
 
-      let lastPage = state.totalPagesCount
-
-      if (!newReservationsPerPage[lastPage]) {
-        newReservationsPerPage[lastPage] = []
+      if (!state.reservationsPerPage[FIRST_PAGE]) {
+        state.reservationsPerPage[FIRST_PAGE] = []
       }
 
-      newReservationsPerPage[lastPage].unshift(newReservation)
+      state.reservationsPerPage[FIRST_PAGE].unshift(newReservation)
 
-      if (newReservationsPerPage[lastPage].length > itemsPerPage) {
-        const overflowOrder = newReservationsPerPage[lastPage].pop()
-        lastPage += 1
-        newReservationsPerPage[lastPage] = [overflowOrder]
+      for (let page = FIRST_PAGE; page <= state.totalPagesCount; page++) {
+        if (state.reservationsPerPage[page]?.length > itemsPerPage) {
+          const overflowReservation = state.reservationsPerPage[page].pop()
+
+          if (state.reservationsPerPage[page + 1]) {
+            state.reservationsPerPage[page + 1].unshift(overflowReservation)
+          }
+        } else {
+          break
+        }
       }
 
-      const updatedTotalReservations = state.totalReservations + 1
-      const updatedTotalPagesCount = Math.ceil(updatedTotalReservations / itemsPerPage)
+      const consecutivePages = [FIRST_PAGE]
+      for (let page = 2; page <= state.totalPagesCount; page++) {
+        if (state.reservationsPerPage[page]) {
+          if (consecutivePages.includes(page - 1)) {
+            consecutivePages.push(page)
+          } else {
+            delete state.reservationsPerPage[page]
+          }
+        }
+      }
 
-      state.reservationsPerPage = newReservationsPerPage
-      state.totalReservations = updatedTotalReservations
-      state.totalPagesCount = updatedTotalPagesCount
+      state.totalReservations += 1
+      state.totalPagesCount = Math.max(1, Math.ceil(state.totalReservations / itemsPerPage))
+    },
+    updateReservationStatus: (state, action) => {
+      const { id, status, updatedAt, reservationDate } = action.payload
+      const currentPageReservations = state.reservationsPerPage[state.currentPage]
+      if (currentPageReservations && currentPageReservations.length > 0) {
+        const index = currentPageReservations.findIndex((reservation) => reservation?.id === id)
+
+        if (index !== -1) {
+          currentPageReservations[index] = { ...currentPageReservations[index], status, updatedAt, reservationDate }
+        }
+      }
+
+      if (state.reservationDetails && state.reservationDetails.id === id) {
+        state.reservationDetails.status = status
+        state.reservationDetails.reservationDate = reservationDate
+      }
     }
   },
   extraReducers: (builder) => {
@@ -351,6 +485,100 @@ const reservationsSlice = createSlice({
         state.approvingReservation = false
         state.error = action.payload
       })
+
+      // Aprobar reprogramación de una reserva
+      .addCase(approveRescheduleReservation.pending, (state) => {
+        state.updatingStatus = true
+      })
+      .addCase(approveRescheduleReservation.fulfilled, (state, action) => {
+        const { id, status, updatedAt, ReservationComments } = action.payload
+        const currentPageReservations = state.reservationsPerPage[state.currentPage]
+        if (currentPageReservations && currentPageReservations.length > 0) {
+          const index = currentPageReservations.findIndex((reservation) => reservation?.id === id)
+
+          if (index !== -1) {
+            currentPageReservations[index] = { ...currentPageReservations[index], status, updatedAt }
+          }
+        }
+        state.reservationDetails.status = status
+        if (ReservationComments) {
+          state.reservationDetails.ReservationComments = ReservationComments
+        }
+        state.updatingStatus = false
+      })
+      .addCase(approveRescheduleReservation.rejected, (state, action) => {
+        state.updatingStatus = false
+        state.error = action.payload
+      })
+
+      // Rechazar reprogramación de una reserva
+      .addCase(invalidRescheduleReservation.pending, (state) => {
+        state.updatingStatus = true
+      })
+      .addCase(invalidRescheduleReservation.fulfilled, (state, action) => {
+        const { id, status, updatedAt, ReservationComments } = action.payload
+        const currentPageReservations = state.reservationsPerPage[state.currentPage]
+        if (currentPageReservations && currentPageReservations.length > 0) {
+          const index = currentPageReservations.findIndex((reservation) => reservation?.id === id)
+
+          if (index !== -1) {
+            currentPageReservations[index] = { ...currentPageReservations[index], status, updatedAt }
+          }
+        }
+        state.reservationDetails.status = status
+        if (ReservationComments) {
+          state.reservationDetails.ReservationComments = ReservationComments
+        }
+        state.updatingStatus = false
+      })
+      .addCase(invalidRescheduleReservation.rejected, (state, action) => {
+        state.updatingStatus = false
+        state.error = action.payload
+      })
+
+      // Marcar una reserva como usada
+      .addCase(markAsUsed.pending, (state) => {
+        state.updatingStatus = true
+      })
+      .addCase(markAsUsed.fulfilled, (state, action) => {
+        const { id, status, updatedAt } = action.payload
+        const currentPageReservations = state.reservationsPerPage[state.currentPage]
+        if (currentPageReservations && currentPageReservations.length > 0) {
+          const index = currentPageReservations.findIndex((reservation) => reservation?.id === id)
+
+          if (index !== -1) {
+            currentPageReservations[index] = { ...currentPageReservations[index], status, updatedAt }
+          }
+        }
+        state.reservationDetails.status = status
+        state.updatingStatus = false
+      })
+      .addCase(markAsUsed.rejected, (state, action) => {
+        state.updatingStatus = false
+        state.error = action.payload
+      })
+
+      // Marcar una reserva como expirada
+      .addCase(markAsExpired.pending, (state) => {
+        state.updatingStatus = true
+      })
+      .addCase(markAsExpired.fulfilled, (state, action) => {
+        const { id, status, updatedAt } = action.payload
+        const currentPageReservations = state.reservationsPerPage[state.currentPage]
+        if (currentPageReservations && currentPageReservations.length > 0) {
+          const index = currentPageReservations.findIndex((reservation) => reservation?.id === id)
+
+          if (index !== -1) {
+            currentPageReservations[index] = { ...currentPageReservations[index], status, updatedAt }
+          }
+        }
+        state.reservationDetails.status = status
+        state.updatingStatus = false
+      })
+      .addCase(markAsExpired.rejected, (state, action) => {
+        state.updatingStatus = false
+        state.error = action.payload
+      })
   }
 })
 
@@ -360,7 +588,8 @@ export const {
   setSearchData,
   setSelectedSearchOption,
   setReservationComment,
-  setNewReservation
+  setNewReservation,
+  updateReservationStatus
 } = reservationsSlice.actions
 
 export default reservationsSlice.reducer

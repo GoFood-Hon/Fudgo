@@ -19,6 +19,7 @@ import {
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import "dayjs/locale/es"
+import { colors } from "../theme/colors"
 
 dayjs.extend(relativeTime)
 dayjs.locale("es")
@@ -371,6 +372,7 @@ export const searchOptionsDishes = [{ value: "name", label: "Nombre" }]
 //Search options for reservations
 export const searchOptionsReservations = [
   { value: "id", label: "ID" },
+  { value: "reservationCode", label: "Código" },
   { value: "phoneNumber", label: "Teléfono del cliente" },
   { value: "identityNumber", label: "DNI" }
 ]
@@ -497,3 +499,27 @@ export const billsData = (orderDetails) => [
   ["Precio de envío", getFormattedHNL(orderDetails?.shippingPrice)],
   ["Propina", getFormattedHNL(orderDetails?.tip)]
 ]
+
+export const reservationColorStatus = {
+  pending: colors.yellow_badge,
+  cancelled: colors.main_app_color,
+  approved: colors.green_badge,
+  confirmed: colors.blue_badge,
+  "rescheduling-requested": colors.yellow_badge,
+  "rescheduling-confirmed": colors.blue_badge,
+  "rescheduling-invalid": colors.main_app_color,
+  expired: colors.main_app_color,
+  used: colors.blue_badge
+}
+
+export const reservationLabels = {
+  pending: "Pendiente",
+  cancelled: "Cancelada",
+  approved: "Aprobada",
+  confirmed: "Confirmada",
+  "rescheduling-requested": "Reagendamiento solicitado",
+  "rescheduling-confirmed": "Reagendamiento confirmado",
+  "rescheduling-invalid": "Reagendamiento invalidado",
+  expired: "Expirada",
+  used: "Usada"
+}

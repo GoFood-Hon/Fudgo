@@ -12,7 +12,6 @@ export default function InputField({
   type = "text",
   value,
   onChange,
-  defaultValue,
   disabled,
   required,
   visible,

@@ -205,10 +205,9 @@ export const updateLoyaltyProgram = createAsyncThunk(
 
         if (failedDeletes.length > 0) {
           dispatch(restoreLoyaltyCards(failedDeletes))
-          const errorMessage = failedMessages.length > 1 ? failedMessages.join("\n") : failedMessages[0]
           showNotification({
             title: "Error",
-            message: errorMessage || "Una o más tarjetas no pudieron eliminarse.",
+            message: failedMessages[0] || "Una o más tarjetas no pudieron eliminarse.",
             color: "red"
           })
           return rejectWithValue("Error al eliminar una o más tarjetas.")
@@ -357,6 +356,33 @@ export const markCardAsRedeemed = createAsyncThunk("loyalty/markCardAsRedeemed",
     return rejectWithValue(error.response.data || "Error al marcar la tarjeta como reclamada")
   }
 })
+
+export const updateLoyaltyCardStatus = createAsyncThunk(
+  "loyalty/updateLoyaltyCardStatus",
+  async ({ rewardId, isActive }, { rejectWithValue }) => {
+    try {
+      const response = await loyaltyApi.changeLoyaltyCardRewardStatus(rewardId, isActive)
+
+      showNotification({
+        title: "Actualización exitosa",
+        message: response?.message || "Se actualizó el estado de la tarjeta de recompensa",
+        color: "green"
+      })
+
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.status !== "token_expired") {
+        showNotification({
+          title: "Error",
+          message: error.response?.data?.message || "Error al actualizar el estado de la recompensa",
+          color: "red"
+        })
+      }
+
+      return rejectWithValue(error.response.data || "Error al actualizar el estado de la recompensa")
+    }
+  }
+)
 
 const loyaltySlice = createSlice({
   name: "loyalty",
@@ -603,6 +629,23 @@ const loyaltySlice = createSlice({
         state.loading = false
       })
       .addCase(markCardAsRedeemed.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
+      .addCase(updateLoyaltyCardStatus.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateLoyaltyCardStatus.fulfilled, (state, action) => {
+        const { id, isActive } = action.payload
+        const index = state.loyaltyCards.findIndex((card) => card.id === id)
+
+        if (index !== -1) {
+          state.loyaltyCards[index] = { ...state.loyaltyCards[index], isActive }
+        }
+        state.loading = false
+      })
+      .addCase(updateLoyaltyCardStatus.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })

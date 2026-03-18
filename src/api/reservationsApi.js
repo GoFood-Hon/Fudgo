@@ -45,7 +45,17 @@ const reservationsApi = {
   approveReservation: (reservationId, revisedBy) =>
     axiosClient.patch(`api/v1/table-reservation/${reservationId}/approve`, { revisedBy }),
 
-  setReservationToPending: (reservationId) => axiosClient.patch(`api/v1/table-reservation/${reservationId}/approve`)
+  setReservationToPending: (reservationId) => axiosClient.patch(`api/v1/table-reservation/${reservationId}/approve`),
+
+  approveRescheduleReservation: (reservationId, comment) =>
+    axiosClient.patch(`api/v1/table-reservation/${reservationId}/approveReschedule`, { comment }),
+
+  invalidRescheduleReservation: (reservationId, comment) =>
+    axiosClient.patch(`api/v1/table-reservation/${reservationId}/invalidateReschedule`, { comment }),
+
+  markAsUsed: (reservationCode) => axiosClient.patch(`api/v1/table-reservation/use/${reservationCode}`),
+
+  markAsExpired: (reservationId) => axiosClient.patch(`api/v1/table-reservation/${reservationId}/expire`),
 }
 
 export default reservationsApi

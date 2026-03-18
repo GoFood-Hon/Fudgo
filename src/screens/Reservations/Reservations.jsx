@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   fetchReservationByBranch,
@@ -30,8 +30,10 @@ export const Reservations = () => {
   useEffect(() => {
     if (!reservationsPerPage[page]) {
       user?.role === "admin-restaurant"
-        ? dispatch(fetchReservationByRestaurant({ restaurantId: user?.restaurantId, limit, page, order: "DESC" }))
-        : dispatch(fetchReservationByBranch({ branchId: user?.sucursalId, limit, page, order: "DESC" }))
+        ? dispatch(
+            fetchReservationByRestaurant({ restaurantId: user?.restaurantId, limit, page, orderBy: "createdAt", order: "DESC" })
+          )
+        : dispatch(fetchReservationByBranch({ branchId: user?.sucursalId, limit, page, orderBy: "createdAt", order: "DESC" }))
     }
   }, [dispatch, limit, page, reservationsPerPage])
 
@@ -62,9 +64,6 @@ export const Reservations = () => {
             search: query
           })
         )
-    dispatch(
-      fetchMenus({ restaurantId: user.restaurantId, limit, page, order: "DESC", search_field: searchField, search: query })
-    )
   }
 
   return haveReservationsModule ? (

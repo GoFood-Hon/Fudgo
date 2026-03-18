@@ -1,8 +1,10 @@
 import { Paper, Flex, Text, Image } from "@mantine/core"
-import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone"
+import { Dropzone } from "@mantine/dropzone"
 import { IconPhoto } from "@tabler/icons-react"
 import { rem } from "@mantine/core"
 import { useState, useEffect, useMemo } from "react"
+
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", 'image/webp']
 
 export function ImageDropzone({ image, onDrop, images, error, title }) {
   const [previews, setPreviews] = useState([])
@@ -34,7 +36,7 @@ export function ImageDropzone({ image, onDrop, images, error, title }) {
   return (
     <Paper withBorder radius="md" h="100%">
       <Flex align="center" h="100%" justify="center">
-        <Dropzone onDrop={onDrop} accept={IMAGE_MIME_TYPE} h={220} style={{ cursor: "pointer" }}>
+        <Dropzone onDrop={onDrop} accept={ACCEPTED_IMAGE_TYPES} h={220} style={{ cursor: "pointer" }}>
           <Flex direction="column" justify="center" align="center" h={220}>
             {hasPreviews ? (
               previews.map((src, i) => <Image key={i} radius="md" h="100%" maw="100%" fit="contain" src={src} />)

@@ -282,7 +282,7 @@ const CardsViewLayout = ({
                       {item?.images && item?.images?.length > 0 ? (
                         <Image
                           src={item?.images[0]?.location}
-                          h={160}
+                          h={220}
                           fit={elementsName === "productos" ? "contain" : "cover"}
                           alt={item?.name || "Imagen"}
                           fallbackSrc="https://thumb.ac-illust.com/b1/b170870007dfa419295d949814474ab2_t.jpeg"
@@ -292,14 +292,14 @@ const CardsViewLayout = ({
                       )}
                     </Card.Section>
 
-                    <Group justify="space-between" mt="md" mb="xs">
-                      <Box w={160}>
+                    <Group justify="space-between" mt="xs" mb="xs">
+                      <Box w={240}>
                         <Tooltip
                           label={item?.name}
                           position="bottom-start"
                           transitionProps={{ transition: "fade-down", duration: 300 }}
                           color={colors.main_app_color}>
-                          <Text truncate="end" size="lg" fw={700}>
+                          <Text truncate='end' size="lg" fw={700}>
                             {item?.name}
                           </Text>
                         </Tooltip>
@@ -309,7 +309,7 @@ const CardsViewLayout = ({
                           checked={item?.isActive}
                           onChange={() => (item?.isActive ? onDisableItem(item?.id) : onEnableItem(item?.id))}
                           color={colors.main_app_color}
-                          size="md"
+                          size="sm"
                           thumbIcon={
                             item?.isActive ? (
                               <IconCheck style={{ width: rem(12), height: rem(12) }} stroke={3} color={colors.main_app_color} />
@@ -321,7 +321,7 @@ const CardsViewLayout = ({
                       </MantineProvider>
                     </Group>
 
-                    <Text size="sm" c="dimmed" h={50}>
+                    <Text size="sm" c="dimmed" h={20}>
                       {elementsName === "comercios"
                         ? item?.socialReason
                         : elementsName === "sucursales"
@@ -329,7 +329,7 @@ const CardsViewLayout = ({
                           : getFormattedHNL(item?.price)}
                     </Text>
 
-                    <Button color={colors.main_app_color} fullWidth mt="md" radius="md" onClick={() => onDetailsClick(item?.id)}>
+                    <Button color={colors.main_app_color} fullWidth mt="sm" radius="md" onClick={() => onDetailsClick(item?.id)}>
                       Ver detalles
                     </Button>
                   </Card>

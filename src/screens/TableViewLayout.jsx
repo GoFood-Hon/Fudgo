@@ -55,7 +55,6 @@ const TableViewLayout = ({
                   </Text>
                 </Flex>
                 <Button
-                  //className={`${onNewItemClick ? "visible" : "invisible"}`}
                   style={{ display: onNewItemClick ?? "none" }}
                   color={colors.main_app_color}
                   onClick={onNewItemClick}>

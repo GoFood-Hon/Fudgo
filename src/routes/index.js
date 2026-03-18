@@ -259,7 +259,7 @@ export const NAVIGATION_ROUTES_RES_ADMIN_TWO = [
     initiallyOpened: false,
     links: [
       {
-        label: "Datos del comercio",
+        label: "Información del comercio",
         link: "/settings/shop-information"
       },
       {

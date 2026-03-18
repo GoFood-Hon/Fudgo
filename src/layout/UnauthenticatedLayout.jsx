@@ -70,7 +70,7 @@ export default function UnauthenticatedLayout() {
               <Image src={logoImage} alt="logo" h={28} />
             </Group>
             <Outlet />
-            <Flex direction="column" mt="md" align="center">
+            <Flex direction="column" mt="xs" align="center">
               <Text c="dimmed" fs="italic" size="xs">
                 powered by
               </Text>

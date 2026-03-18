@@ -446,7 +446,7 @@ const ordersSlice = createSlice({
         state.updatingValue = action.meta.arg
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
-        const { id, status } = action.payload
+        const { id, status, sentToKitchenTimestamp, finishedCookingTimestamp } = action.payload
 
         const currentPageOrders = state.ordersPerPage[state.currentPage]
         if (currentPageOrders && currentPageOrders.length > 0) {
@@ -462,6 +462,8 @@ const ordersSlice = createSlice({
         state.ordersForKitchenPerPage[state.currentOrdersForKitchenPage] = updatedOrders
         if (state.orderDetails) {
           state.orderDetails.status = status
+          state.orderDetails.sentToKitchenTimestamp = sentToKitchenTimestamp
+          state.orderDetails.finishedCookingTimestamp = finishedCookingTimestamp
         }
         state.updatingOrderStatus = false
         state.updatingValue = null

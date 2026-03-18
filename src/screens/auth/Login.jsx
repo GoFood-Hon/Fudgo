@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { emailRules, passwordRules } from "../../utils/inputRules"
@@ -83,7 +83,7 @@ export default function Login() {
         <Group justify="space-between" mt="md">
           <Checkbox style={{ visibility: "hidden" }} color={colors.main_app_color} label="Recuérdame" />
           <Link className="text-sm text-gray-300 hover:underline" to={AUTH_NAVIGATION_ROUTES.ForgetPassword.path}>
-            ¿Olvidaste tu contraseña?
+            ¿Olvidaste tu contraseñas?
           </Link>
         </Group>
         <Button type="submit" loading={isLoading} fullWidth color={colors.main_app_color}>
